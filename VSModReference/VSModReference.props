@@ -1,0 +1,32 @@
+<Project>
+    <PropertyGroup>
+        <_CCCC_TaskAssembly>$(MSBuildThisFileDirectory)..\lib\net5.0\$(MSBuildThisFileName).dll</_CCCC_TaskAssembly>
+        <_CCCC_TaskAssembly Condition="!Exists('$(_CCCC_TaskAssembly)')">$(MSBuildThisFileDirectory)bin\Release\net5.0\wwwDayDream.$(MSBuildThisFileName).dll</_CCCC_TaskAssembly>
+        
+    </PropertyGroup>
+
+    <UsingTask TaskName="ModReferenceTask" AssemblyFile="$(_CCCC_TaskAssembly)" />
+
+    <Target Name="ModReferences" AfterTargets="ResolveReferences" BeforeTargets="FindReferenceAssembliesForReferences;Publicize;AssemblyPublicize"
+            Inputs="@(VSModReference)"
+            Outputs="@(_NewReferences -> '%(Identity).downloaded')">
+        <Error Condition="'$(UsingMicrosoftNETSdk)' != 'true'" Text="CessilCellsCeaChells.MSBuild only works in SDK-style projects" />
+
+        <ModReferenceTask IntermediateOutputPath="$(IntermediateOutputPath)"
+                          VSModReference="@(VSModReference)">
+            <Output TaskParameter="NewReferences" ItemName="_NewReferences" />
+        </ModReferenceTask>
+
+        <ItemGroup>
+            <Reference Include="@(_NewReferences)" />
+        </ItemGroup>
+        
+        <Message Importance="high" Text="Downloaded any VSModReference(s)"/>
+
+        <Touch Files="@(_NewReferences -> '%(Identity).downloaded')" AlwaysCreate="true" ForceTouch="true"/>
+    </Target>
+
+    <ItemDefinitionGroup>
+        <VSModReference Visible="false"/>
+    </ItemDefinitionGroup>
+</Project>
