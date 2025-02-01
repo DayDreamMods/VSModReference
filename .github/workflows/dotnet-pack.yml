@@ -60,7 +60,7 @@ jobs:
 
       - id: attain-file-paths
         run: |
-          for file in ./*.nupkg; do
+          for file in ./NUPKG/*.nupkg; do
             if [ -e "$file" ]; then
               echo "NUPKG=$file" >> $GITHUB_OUTPUT
               break
