@@ -6,4 +6,5 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <Import Project="../dotnet-common/MSBuild/Packaging.NUPKG.targets"/>
 </Project>
