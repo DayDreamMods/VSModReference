@@ -1,32 +1,40 @@
 <Project>
-    <PropertyGroup>
-        <_CCCC_TaskAssembly>$(MSBuildThisFileDirectory)..\lib\net5.0\$(MSBuildThisFileName).dll</_CCCC_TaskAssembly>
-        <_CCCC_TaskAssembly Condition="!Exists('$(_CCCC_TaskAssembly)')">$(MSBuildThisFileDirectory)bin\Release\net5.0\wwwDayDream.$(MSBuildThisFileName).dll</_CCCC_TaskAssembly>
-        
-    </PropertyGroup>
+    <Target Name="ResolveModReferences"
+            Condition="'@(VSModDBFileReference)' != ''"
+            BeforeTargets="ResolveReferences">
 
-    <UsingTask TaskName="ModReferenceTask" AssemblyFile="$(_CCCC_TaskAssembly)" />
+        <Error Condition="'$(UsingMicrosoftNETSdk)' != 'true'" Text="MSBuild only works in SDK-style projects" />
 
-    <Target Name="ModReferences" AfterTargets="ResolveReferences" BeforeTargets="FindReferenceAssembliesForReferences;Publicize;AssemblyPublicize"
-            Inputs="@(VSModReference)"
-            Outputs="@(_NewReferences -> '%(Identity).downloaded')">
-        <Error Condition="'$(UsingMicrosoftNETSdk)' != 'true'" Text="CessilCellsCeaChells.MSBuild only works in SDK-style projects" />
-
-        <ModReferenceTask IntermediateOutputPath="$(IntermediateOutputPath)"
-                          VSModReference="@(VSModReference)">
-            <Output TaskParameter="NewReferences" ItemName="_NewReferences" />
-        </ModReferenceTask>
+        <PropertyGroup>
+            <AbsoluteIntermediateOutput>$(ProjectDir)$(IntermediateOutputPath)</AbsoluteIntermediateOutput>
+        </PropertyGroup>
 
         <ItemGroup>
-            <Reference Include="@(_NewReferences)" />
+            <ModPackage Include="@(VSModDBFileReference)">
+                <!-- For each mod, we expect the downloaded zip to be named as below and unzipped into a folder with the same name -->
+                <ZipPath>$(AbsoluteIntermediateOutput)/ModRefs/MODDB-%(Identity).zip</ZipPath>
+                <UnzipFolder>$(AbsoluteIntermediateOutput)/ModRefs/MODDB-%(Identity)</UnzipFolder>
+            </ModPackage>
         </ItemGroup>
-        
-        <Message Importance="high" Text="Downloaded any VSModReference(s)"/>
 
-        <Touch Files="@(_NewReferences -> '%(Identity).downloaded')" AlwaysCreate="true" ForceTouch="true"/>
+        <DownloadFile Condition="!Exists('%(ModPackage.ZipPath)')"
+                      DestinationFolder="$(AbsoluteIntermediateOutput)/ModRefs/"
+                      DestinationFileName="MODDB-%(ModPackage.Identity).zip"
+                      SourceUrl="https://mods.vintagestory.at/download?fileid=%(ModPackage.Identity)" />
+
+        <Unzip Condition="!Exists('%(ModPackage.UnzipFolder)')"
+               SourceFiles="%(ModPackage.ZipPath)"
+               DestinationFolder="%(ModPackage.UnzipFolder)" />
+
+        <ItemGroup>
+            <ModAssemblies Include="%(ModPackage.UnzipFolder)\lib\**\*.dll" />
+            <ModAssemblies Include="%(ModPackage.UnzipFolder)\**\*.dll" Condition=" '@(ModAssemblies)' == '' " />
+        </ItemGroup>
+
+        <Message Importance="high" Text="Mod assemblies resolved: @(ModAssemblies)" />
+
+        <ItemGroup>
+            <ReferencePath Include="@(ModAssemblies)" />
+        </ItemGroup>
     </Target>
-
-    <ItemDefinitionGroup>
-        <VSModReference Visible="false"/>
-    </ItemDefinitionGroup>
 </Project>
