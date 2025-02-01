@@ -67,11 +67,9 @@ jobs:
             fi
           done
         
-      - name: Publish to Github Packages
+      - name: Publish to Github 
         if: ${{steps.attain-file-paths.outputs.NUPKG != ''}}
         run: |
-          dotnet nuget add source --username ${{github.repository_owner}} --password $GH_TOKEN --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{github.repository_owner}}/index.json"
-          dotnet nuget push "${{steps.attain-file-paths.outputs.NUPKG}}" --api-key $GH_TOKEN --source "github"
           gh release upload ${{ github.event.release.tag_name }} "${{steps.attain-file-paths.outputs.NUPKG}}"
 
       - name: Publish to Nuget
