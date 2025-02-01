@@ -38,12 +38,14 @@ public class ModReferenceTask : Task {
 
         foreach (var taskItem in VSModReference)
         {
+            Log.LogMessage(MessageImportance.High, $"{VSModReference}");
             if (!taskItem.TryGetMetadata("Include", out var include)) continue;
             var version = "latest";
             taskItem.TryGetMetadata("Version", out version);
-            var assemblies = "*";
-            taskItem.TryGetMetadata("Assembly", out assemblies);
-            taskItem.TryGetMetadata("Assemblies", out assemblies);
+            string? assemblies;
+            if (!taskItem.TryGetMetadata("Assembly", out assemblies))
+                if (!taskItem.TryGetMetadata("Assemblies", out assemblies))
+                    assemblies = "*";
             
             Log.LogMessage(MessageImportance.High, $"{include} - {version} - {assemblies}");
         }
