@@ -1,5 +1,5 @@
 # VSModReference 
-Allows MSBuild projects to use a `<VSModReference Include="" Version="" Assembly="*"/>` tag to reference [VSModDB](https://mods.vintagestory.at/) | https://github.com/anegostudios/vsmoddb mods.
+Allows MSBuild projects to use a `<VSModDBFileReference Include="12345"/>` tag to reference [VSModDB](https://mods.vintagestory.at/) | https://github.com/anegostudios/vsmoddb mods.
 
 ### Support
 Please reach out on Discord: [Daydreaming](https://discord.gg/Mherqbcmep), or create an issue on the repository here!
